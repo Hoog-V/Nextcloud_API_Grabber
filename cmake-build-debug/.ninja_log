@@ -1,4 +1,0 @@
-# ninja log v5
-0	36	1659444792219140152	CMakeFiles/Nextcloud_API_Grabber.dir/CMakeFiles/3.23.2/CompilerIdC/CMakeCCompilerId.c.o	87384b89a0fa2bdb
-0	38	1659444792222473475	CMakeFiles/Nextcloud_API_Grabber.dir/src/library.c.o	497dfdc37c273312
-38	218	1659444792399139575	libNextcloud_API_Grabber.a	3c0a6c6867ccad50

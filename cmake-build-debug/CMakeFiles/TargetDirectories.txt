@@ -1,3 +1,0 @@
-/home/victor/Documents/Nextcloud_API_Grabber/cmake-build-debug/CMakeFiles/Nextcloud_API_Grabber.dir
-/home/victor/Documents/Nextcloud_API_Grabber/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/victor/Documents/Nextcloud_API_Grabber/cmake-build-debug/CMakeFiles/rebuild_cache.dir
