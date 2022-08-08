@@ -1,0 +1,7 @@
+add_executable(DownloadFile "DownloadFile/DownloadFile.c")
+target_link_libraries(DownloadFile PRIVATE curl)
+target_link_libraries(DownloadFile PRIVATE Nextcloud_API_Grabber)
+
+add_executable(RequestFileProperties "RequestFileProperties/RequestFileProperties.c")
+target_link_libraries(RequestFileProperties PRIVATE curl)
+target_link_libraries(RequestFileProperties PRIVATE Nextcloud_API_Grabber)
