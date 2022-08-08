@@ -1,4 +1,5 @@
 #include <WebRequests.h>
+#include <RequestParsing.h>
 
 /*
  *  Macros to retrieve the index/ptr of the needed time/date info
@@ -15,7 +16,6 @@
 #define Decimal_base 10
 #define CLOCK_START_YEAR 1900
 
-#define MAX_PROPFIND_RESP_SIZE 256
 
 /*
  * In the API the month is represented in text.

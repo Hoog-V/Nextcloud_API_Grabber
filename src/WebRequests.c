@@ -96,7 +96,7 @@ struct MemoryStruct *PropFindReq(const char *filename, RequestPropertyType ReqTy
     struct MemoryStruct *chunk = InitializeCURLMemory();
     chunk->CURLHandle = curl_easy_init();
     if (chunk->CURLHandle) {
-        setCurlOptions(chunk->CURLHandle, reqURL);
+        setCurlOptions(chunk, reqURL);
         curl_easy_setopt(chunk->CURLHandle, CURLOPT_CUSTOMREQUEST, "PROPFIND");
         curl_easy_setopt(chunk->CURLHandle, CURLOPT_POST, 1L);
         curl_easy_setopt(chunk->CURLHandle, CURLOPT_POSTFIELDS, UrlPostField);
