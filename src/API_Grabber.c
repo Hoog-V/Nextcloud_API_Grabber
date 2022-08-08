@@ -19,26 +19,18 @@ const char *get_content_type_end_tag = "</d:getcontenttype>";
 
 void CleanUpResp(struct MemoryStruct *ReqData) {
     curl_easy_cleanup(ReqData->CURLHandle);
-    free(ReqData->memory);
-    free(ReqData);
 }
 
 int initAPIGrabber(API_GRABBER_PROP Properties){
 
     const char * DavURL = "/remote.php/dav/files/";
     int size = strlen(Properties.NextcloudURL) + strlen(Properties.User)+ strlen(DavURL)+2;
-    _InstanceProperties.DavURL = malloc( size);
     strcat(_InstanceProperties.DavURL, Properties.NextcloudURL);
     strcat(_InstanceProperties.DavURL, DavURL);
     strcat(_InstanceProperties.DavURL, Properties.User);
     strcat(_InstanceProperties.DavURL, "/");
     _InstanceProperties.DavURL[size] = '\0';
-    int AuthenticationSize = strlen(Properties.User)+strlen(Properties.Password)+2;
-    _InstanceProperties.Authentication = malloc(AuthenticationSize);
-    strcat(_InstanceProperties.Authentication, Properties.User);
-    strcat(_InstanceProperties.Authentication, ":");
-    strcat(_InstanceProperties.Authentication, Properties.Password);
-    _InstanceProperties.Authentication[AuthenticationSize] = '\0';
+    _InstanceProperties.Authentication = Properties.Authentication;
     printf("DAVURL: %s Authentication: %s \n", _InstanceProperties.DavURL, _InstanceProperties.Authentication);
     return 0;
 }

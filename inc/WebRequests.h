@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 struct MemoryStruct {
-    char *memory;
+    char memory[2048];
     size_t size;
     CURLcode CURLStatus;
     CURL* CURLHandle;
@@ -24,7 +24,7 @@ typedef enum {
 }RequestPropertyType;
 
 typedef struct {
-    char* DavURL;
+    char DavURL[512];
     char *Authentication;
 } WebReqProperties;
 

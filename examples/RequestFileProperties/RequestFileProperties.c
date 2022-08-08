@@ -3,14 +3,14 @@
 #define SERVER_FILEPATH "Photos/Birdie.jpg" //Replace spaces with %20
 
 #define NEXTCLOUD_BASE_URL "https://cloud.example.com"
-#define NEXTCLOUD_USER "username"
-#define NEXTCLOUD_USER_Password "password"
+#define NEXTCLOUD_AUTH "USER:PASSWORD"
+#define NEXTCLOUD_USER "USER"
 
 int main(int argc, char *argv[]){
     API_GRABBER_PROP Properties;
-    Properties.User = NEXTCLOUD_USER;
-    Properties.Password = NEXTCLOUD_USER_Password;
+    Properties.Authentication = NEXTCLOUD_AUTH;
     Properties.NextcloudURL= NEXTCLOUD_BASE_URL;
+    Properties.User = NEXTCLOUD_USER;
     initAPIGrabber(Properties);
 
     int filesize = getFileSize(SERVER_FILEPATH);
