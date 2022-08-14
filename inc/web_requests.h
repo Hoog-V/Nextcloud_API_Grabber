@@ -10,14 +10,28 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define CACHING 1
+
+#ifdef CACHING
+typedef enum{
+    get,
+    propfind
+}req_type_t;
+#endif
+
 struct req_memory {
-    char memory[2048];
+    char memory[64000];
     size_t size;
     CURLcode curl_status;
     CURL* curl_handle;
+#ifdef CACHING
+    time_t req_time;
+    req_type_t req_type;
+#endif
 };
 
 typedef enum {
+    req_all,
     oc_size,
     get_lastmodified,
     get_contenttype,
@@ -33,6 +47,6 @@ extern instance_prop_t _instance_properties;
 
 struct req_memory* get_req(const char* filename);
 
-struct req_memory *propfind_req(const char *filename, req_prop_type_t ReqType);
+struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_type);
 
 #endif //NEXTCLOUD_API_GRABBER_WEB_REQUESTS_H

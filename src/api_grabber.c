@@ -44,7 +44,6 @@ void download_file(const char *filename, const char *loc) {
         fclose(fp);
         printf("%d", req_data->size);
     }
-    curl_easy_cleanup(req_data->curl_handle);
 }
 
 size_t get_file_size(const char *filename) {
@@ -57,7 +56,6 @@ size_t get_file_size(const char *filename) {
         char *result_str = parse_propfind_resp(req_data->memory, oc_size_begin_tag, oc_size_end_tag);
         result = strtol(result_str, NULL, 10);
     }
-    curl_easy_cleanup(req_data->curl_handle);
     return result;
 }
 
@@ -72,7 +70,6 @@ char *get_date_changed(const char *filename) {
                                                  get_lastmodified_end_tag);
         memcpy(date, parsed_resp, DATE_STR_SIZE);
     }
-    curl_easy_cleanup(req_data->curl_handle);
     return date;
 }
 
@@ -87,6 +84,5 @@ char *get_content_type(const char *filename) {
                                                      get_content_type_end_tag);
         memcpy(content_type, parsed_response, strlen(parsed_response));
     }
-    curl_easy_cleanup(req_data->curl_handle);
     return content_type;
 }
