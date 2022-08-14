@@ -1,24 +1,68 @@
 #include <web_requests.h>
+#include <time.h>
+#include <stdbool.h>
 
 #define MAX_URL_LENGTH 2048
 #define TERMINATING_CHAR '\0'
 #define TERMINATING_CHAR_SIZE 1
 
+
+#define CACHING_TIME 15*60
+
+
 struct req_memory g_chunk;
 
 const char *empty_req_body = "<?xml version=\"1.0\"?>\n"
-                                "<d:propfind  xmlns:d=\"DAV:\" xmlns:oc=\"http://owncloud.org/ns\" xmlns:nc=\"http://nextcloud.org/ns\">\n"
-                                "  <d:prop>\n"
-                                "       %s\n"
-                                "  </d:prop>\n"
-                                "</d:propfind>";
-
+                             "<d:propfind  xmlns:d=\"DAV:\" xmlns:oc=\"http://owncloud.org/ns\" xmlns:nc=\"http://nextcloud.org/ns\">\n"
+                             "  <d:prop>\n"
+                             "       %s\n"
+                             "  </d:prop>\n"
+                             "</d:propfind>";
+#ifdef CACHING
+char *propfind_request_all = "<?xml version=\"1.0\"?>\n"
+                             "<d:propfind  xmlns:d=\"DAV:\" xmlns:oc=\"http://owncloud.org/ns\" xmlns:nc=\"http://nextcloud.org/ns\">\n"
+                             "  <d:prop>\n"
+                             "        <d:getlastmodified />\n"
+                             "        <d:getetag />\n"
+                             "        <d:getcontenttype />\n"
+                             "        <d:resourcetype />\n"
+                             "        <oc:fileid />\n"
+                             "        <oc:permissions />\n"
+                             "        <oc:size />\n"
+                             "        <d:getcontentlength />\n"
+                             "        <nc:has-preview />\n"
+                             "        <oc:favorite />\n"
+                             "        <oc:comments-unread />\n"
+                             "        <oc:owner-display-name />\n"
+                             "        <oc:share-types />\n"
+                             "        <nc:contained-folder-count />\n"
+                             "        <nc:contained-file-count />\n"
+                             "  </d:prop>\n"
+                             "</d:propfind>";
+#endif
 
 char *oc_size_attr = "<oc:size />";
 char *get_lastmodified_attr = "<d:getlastmodified />";
 char *get_contenttype_attr = "<d:getcontenttype />";
 
 instance_prop_t _instance_properties;
+
+#ifdef CACHING
+
+bool file_is_cached(const char * filename, req_type_t curr_req_type){
+    static char old_filename[200];
+    bool same_filename = strcmp(filename, old_filename);
+    bool expired = (time(NULL) - g_chunk.req_time) > CACHING_TIME;
+    bool same_req = (curr_req_type == g_chunk.req_type);
+
+    if(same_filename && !expired && same_req)
+        return true;
+
+    strcpy(old_filename, filename);
+    return false;
+}
+#endif
+
 
 size_t curl_write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
@@ -31,7 +75,7 @@ size_t curl_write_memory_callback(void *contents, size_t size, size_t nmemb, voi
     return realsize;
 }
 
-void setCurlOptions(struct req_memory *chunk, const char* reqURL){
+void setCurlOptions(struct req_memory *chunk, const char *reqURL) {
     curl_easy_setopt(chunk->curl_handle, CURLOPT_URL, reqURL);
     curl_easy_setopt(chunk->curl_handle, CURLOPT_USERPWD, _instance_properties.authentication);
     curl_easy_setopt(chunk->curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
@@ -64,6 +108,10 @@ char *create_req_body(req_prop_type_t req_type) {
         case get_contenttype:
             req_body_attr = get_contenttype_attr;
             break;
+#ifdef CACHING
+        case req_all:
+            return propfind_request_all;
+#endif
         default:
             return NULL;
     }
@@ -75,8 +123,18 @@ char *create_req_body(req_prop_type_t req_type) {
 }
 
 
-struct req_memory *propfind_req(const char *filename, req_prop_type_t ReqType) {
-    char *post_field = create_req_body(ReqType);
+struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_type) {
+    char *post_field;
+#ifdef CACHING
+    if (file_is_cached(filename, propfind))
+        return &g_chunk;
+    else {
+        g_chunk.req_time = time(NULL);
+        post_field = create_req_body(req_all);
+    }
+#else
+    post_field = create_req_body(req_prop_type);
+#endif
     char *url = generateReqUrl(filename);
     g_chunk.curl_handle = curl_easy_init();
     if (g_chunk.curl_handle) {
@@ -86,10 +144,20 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t ReqType) {
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_POSTFIELDS, post_field);
         g_chunk.curl_status = curl_easy_perform(g_chunk.curl_handle);
     }
+    curl_easy_cleanup(g_chunk.curl_handle);
     return &g_chunk;
 }
 
 struct req_memory *get_req(const char *filename) {
+
+#ifdef CACHING
+    if (file_is_cached(filename, get))
+        return &g_chunk;
+    else{
+        g_chunk.req_time = time(NULL);
+    }
+#endif
+
     char *url = generateReqUrl(filename);
 
     g_chunk.curl_handle = curl_easy_init();
@@ -97,5 +165,6 @@ struct req_memory *get_req(const char *filename) {
         setCurlOptions(&g_chunk, url);
         g_chunk.curl_status = curl_easy_perform(g_chunk.curl_handle);
     }
+    curl_easy_cleanup(g_chunk.curl_handle);
     return &g_chunk;
 }
