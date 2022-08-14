@@ -20,7 +20,7 @@ typedef enum{
 #endif
 
 struct req_memory {
-    char memory[64000];
+    char memory[1024];
     size_t size;
     CURLcode curl_status;
     CURL* curl_handle;
@@ -45,7 +45,7 @@ typedef struct {
 
 extern instance_prop_t _instance_properties;
 
-struct req_memory* get_req(const char* filename);
+struct req_memory* download_req(const char* filename, const char* loc);
 
 struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_type);
 

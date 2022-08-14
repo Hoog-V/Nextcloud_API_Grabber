@@ -9,6 +9,8 @@
 
 #define CACHING_TIME 15*60
 
+FILE *fp;
+
 
 struct req_memory g_chunk;
 
@@ -63,8 +65,7 @@ bool file_is_cached(const char * filename, req_type_t curr_req_type){
 }
 #endif
 
-
-size_t curl_write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+size_t propfind_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
     struct req_memory *mem = (struct req_memory *) userp;
 
@@ -75,12 +76,18 @@ size_t curl_write_memory_callback(void *contents, size_t size, size_t nmemb, voi
     return realsize;
 }
 
+size_t download_file_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+
+    fwrite(contents, realsize, size, fp);
+
+    return realsize;
+}
+
 void setCurlOptions(struct req_memory *chunk, const char *reqURL) {
     curl_easy_setopt(chunk->curl_handle, CURLOPT_URL, reqURL);
     curl_easy_setopt(chunk->curl_handle, CURLOPT_USERPWD, _instance_properties.authentication);
     curl_easy_setopt(chunk->curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(chunk->curl_handle, CURLOPT_WRITEFUNCTION, curl_write_memory_callback);
-    curl_easy_setopt(chunk->curl_handle, CURLOPT_WRITEDATA, (void *) chunk);
     curl_easy_setopt(chunk->curl_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 }
 
@@ -129,6 +136,7 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
     if (file_is_cached(filename, propfind))
         return &g_chunk;
     else {
+        g_chunk.size = 0;
         g_chunk.req_time = time(NULL);
         post_field = create_req_body(req_all);
     }
@@ -139,6 +147,8 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
     g_chunk.curl_handle = curl_easy_init();
     if (g_chunk.curl_handle) {
         setCurlOptions(&g_chunk, url);
+        curl_easy_setopt(g_chunk.curl_handle, CURLOPT_WRITEFUNCTION, propfind_memory_callback);
+        curl_easy_setopt(g_chunk.curl_handle, CURLOPT_WRITEDATA, (void *) &g_chunk);
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_CUSTOMREQUEST, "PROPFIND");
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_POST, 1L);
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_POSTFIELDS, post_field);
@@ -148,7 +158,7 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
     return &g_chunk;
 }
 
-struct req_memory *get_req(const char *filename) {
+struct req_memory *download_req(const char *filename, const char *loc) {
 
 #ifdef CACHING
     if (file_is_cached(filename, get))
@@ -157,14 +167,15 @@ struct req_memory *get_req(const char *filename) {
         g_chunk.req_time = time(NULL);
     }
 #endif
-
     char *url = generateReqUrl(filename);
-
+    fp = fopen(loc, "w");
     g_chunk.curl_handle = curl_easy_init();
     if (g_chunk.curl_handle) {
         setCurlOptions(&g_chunk, url);
+        curl_easy_setopt(g_chunk.curl_handle, CURLOPT_WRITEFUNCTION, download_file_memory_callback);
         g_chunk.curl_status = curl_easy_perform(g_chunk.curl_handle);
     }
+    fclose(fp);
     curl_easy_cleanup(g_chunk.curl_handle);
     return &g_chunk;
 }
