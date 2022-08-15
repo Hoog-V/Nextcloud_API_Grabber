@@ -16,6 +16,5 @@ int main(int argc, char *argv[]){
     init_api_grabber(properties);
 
     download_file(SERVER_FILEPATH, DOWNLOAD_FILEPATH);
-
     return 0;
 }
