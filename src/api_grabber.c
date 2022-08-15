@@ -33,10 +33,10 @@ int init_api_grabber(api_grabber_prop_t properties){
 }
 
 void download_file(const char *filename, const char *loc) {
-    struct req_memory *req_data = download_req(filename, loc);
+    int status = download_req(filename, loc);
 
-    if (req_data->curl_status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
+    if (status != 0) {
+        fprintf(stderr, "error: couldn't download file\n");
     }
 }
 

@@ -1,18 +1,9 @@
 #include <web_requests.h>
 #include <time.h>
+
+#ifdef CACHING
 #include <stdbool.h>
-
-#define MAX_URL_LENGTH 2048
-#define TERMINATING_CHAR '\0'
-#define TERMINATING_CHAR_SIZE 1
-
-
-#define CACHING_TIME 15*60
-
-FILE *fp;
-
-
-struct req_memory g_chunk;
+#endif
 
 const char *empty_req_body = "<?xml version=\"1.0\"?>\n"
                              "<d:propfind  xmlns:d=\"DAV:\" xmlns:oc=\"http://owncloud.org/ns\" xmlns:nc=\"http://nextcloud.org/ns\">\n"
@@ -41,6 +32,8 @@ char *propfind_request_all = "<?xml version=\"1.0\"?>\n"
                              "        <nc:contained-file-count />\n"
                              "  </d:prop>\n"
                              "</d:propfind>";
+
+
 #endif
 
 char *oc_size_attr = "<oc:size />";
@@ -49,20 +42,24 @@ char *get_contenttype_attr = "<d:getcontenttype />";
 
 instance_prop_t _instance_properties;
 
+struct req_type_info_t{
+    char filename[200];
+    time_t req_time;
+};
+
+
 #ifdef CACHING
 
-bool file_is_cached(const char * filename, req_type_t curr_req_type){
-    static char old_filename[200];
-    bool same_filename = strcmp(filename, old_filename);
-    bool expired = (time(NULL) - g_chunk.req_time) > CACHING_TIME;
-    bool same_req = (curr_req_type == g_chunk.req_type);
+bool file_is_cached(const char *filename, struct req_type_info_t* req_info) {
+    bool same_filename = !strcmp(filename, req_info->filename);
+    bool expired = (time(NULL) - req_info->req_time) > CACHING_TIME;
 
-    if(same_filename && !expired && same_req)
+    if (same_filename && !expired)
         return true;
 
-    strcpy(old_filename, filename);
     return false;
 }
+
 #endif
 
 size_t propfind_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -78,17 +75,17 @@ size_t propfind_memory_callback(void *contents, size_t size, size_t nmemb, void 
 
 size_t download_file_memory_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
-
+    FILE *fp = (FILE *) userp;
     fwrite(contents, realsize, size, fp);
 
     return realsize;
 }
 
-void setCurlOptions(struct req_memory *chunk, const char *reqURL) {
-    curl_easy_setopt(chunk->curl_handle, CURLOPT_URL, reqURL);
-    curl_easy_setopt(chunk->curl_handle, CURLOPT_USERPWD, _instance_properties.authentication);
-    curl_easy_setopt(chunk->curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(chunk->curl_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+void setCurlOptions(CURL* curl_handle, const char *reqURL) {
+    curl_easy_setopt(curl_handle, CURLOPT_URL, reqURL);
+    curl_easy_setopt(curl_handle, CURLOPT_USERPWD, _instance_properties.authentication);
+    curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 }
 
 
@@ -131,13 +128,17 @@ char *create_req_body(req_prop_type_t req_type) {
 
 
 struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_type) {
+    static struct req_memory g_chunk;
     char *post_field;
+
 #ifdef CACHING
-    if (file_is_cached(filename, propfind))
+    static struct req_type_info_t req_info;
+
+    if (file_is_cached(filename, &req_info))
         return &g_chunk;
     else {
-        g_chunk.size = 0;
-        g_chunk.req_time = time(NULL);
+        req_info.req_time = time(NULL);
+        strcpy(req_info.filename, filename);
         post_field = create_req_body(req_all);
     }
 #else
@@ -145,8 +146,9 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
 #endif
     char *url = generateReqUrl(filename);
     g_chunk.curl_handle = curl_easy_init();
+    g_chunk.size = 0;
     if (g_chunk.curl_handle) {
-        setCurlOptions(&g_chunk, url);
+        setCurlOptions(g_chunk.curl_handle, url);
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_WRITEFUNCTION, propfind_memory_callback);
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_WRITEDATA, (void *) &g_chunk);
         curl_easy_setopt(g_chunk.curl_handle, CURLOPT_CUSTOMREQUEST, "PROPFIND");
@@ -158,24 +160,34 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
     return &g_chunk;
 }
 
-struct req_memory *download_req(const char *filename, const char *loc) {
 
+int download_req(const char *filename, const char *loc) {
+int curl_status;
 #ifdef CACHING
-    if (file_is_cached(filename, get))
-        return &g_chunk;
-    else{
-        g_chunk.req_time = time(NULL);
+    static struct req_type_info_t req_info;
+
+    if (file_is_cached(filename, &req_info))
+        return 0;
+
+    else {
+        req_info.req_time = time(NULL);
+        strcpy(req_info.filename, filename);
     }
 #endif
+
     char *url = generateReqUrl(filename);
-    fp = fopen(loc, "w");
-    g_chunk.curl_handle = curl_easy_init();
-    if (g_chunk.curl_handle) {
-        setCurlOptions(&g_chunk, url);
-        curl_easy_setopt(g_chunk.curl_handle, CURLOPT_WRITEFUNCTION, download_file_memory_callback);
-        g_chunk.curl_status = curl_easy_perform(g_chunk.curl_handle);
+    CURL* curl_handle = curl_easy_init();
+    if (curl_handle) {
+        FILE *fp;
+        fp = fopen(loc, "w");
+
+        setCurlOptions(curl_handle, url);
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, download_file_memory_callback);
+        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *) fp);
+        curl_status = curl_easy_perform(curl_handle);
+
+        fclose(fp);
     }
-    fclose(fp);
-    curl_easy_cleanup(g_chunk.curl_handle);
-    return &g_chunk;
+    curl_easy_cleanup(curl_handle);
+    return 0;
 }
