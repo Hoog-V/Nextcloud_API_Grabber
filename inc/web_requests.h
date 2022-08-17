@@ -44,7 +44,7 @@ typedef struct {
 
 
 
-extern instance_prop_t _instance_properties;
+extern instance_prop_t _nc_instance_properties;
 
 int download_req(const char* filename, const char* loc);
 

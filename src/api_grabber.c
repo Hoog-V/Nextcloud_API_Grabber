@@ -22,13 +22,13 @@ int init_api_grabber(api_grabber_prop_t properties){
 
     //Compose the webdev url out of the base url and user info from the properties struct
     int size = strlen(properties.nextcloud_url) + strlen(properties.user) + strlen(dav_url_postfix) + 2; //+2 to compensate for the '\0' and '/' char
-    strcat(_instance_properties.dav_url, properties.nextcloud_url);
-    strcat(_instance_properties.dav_url, dav_url_postfix);
-    strcat(_instance_properties.dav_url, properties.user);
-    strcat(_instance_properties.dav_url, "/");
-    _instance_properties.dav_url[size] = '\0';
+    strcat(_nc_instance_properties.dav_url, properties.nextcloud_url);
+    strcat(_nc_instance_properties.dav_url, dav_url_postfix);
+    strcat(_nc_instance_properties.dav_url, properties.user);
+    strcat(_nc_instance_properties.dav_url, "/");
+    _nc_instance_properties.dav_url[size] = '\0';
 
-    _instance_properties.authentication = properties.authentication;
+    _nc_instance_properties.authentication = properties.authentication;
     return 0;
 }
 

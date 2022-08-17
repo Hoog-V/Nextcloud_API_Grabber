@@ -1,46 +1,12 @@
 #include <web_requests.h>
+#include <propfind_attr.h>
 #include <time.h>
 
 #ifdef CACHING
 #include <stdbool.h>
 #endif
 
-const char *empty_req_body = "<?xml version=\"1.0\"?>\n"
-                             "<d:propfind  xmlns:d=\"DAV:\" xmlns:oc=\"http://owncloud.org/ns\" xmlns:nc=\"http://nextcloud.org/ns\">\n"
-                             "  <d:prop>\n"
-                             "       %s\n"
-                             "  </d:prop>\n"
-                             "</d:propfind>";
-#ifdef CACHING
-char *propfind_request_all = "<?xml version=\"1.0\"?>\n"
-                             "<d:propfind  xmlns:d=\"DAV:\" xmlns:oc=\"http://owncloud.org/ns\" xmlns:nc=\"http://nextcloud.org/ns\">\n"
-                             "  <d:prop>\n"
-                             "        <d:getlastmodified />\n"
-                             "        <d:getetag />\n"
-                             "        <d:getcontenttype />\n"
-                             "        <d:resourcetype />\n"
-                             "        <oc:fileid />\n"
-                             "        <oc:permissions />\n"
-                             "        <oc:size />\n"
-                             "        <d:getcontentlength />\n"
-                             "        <nc:has-preview />\n"
-                             "        <oc:favorite />\n"
-                             "        <oc:comments-unread />\n"
-                             "        <oc:owner-display-name />\n"
-                             "        <oc:share-types />\n"
-                             "        <nc:contained-folder-count />\n"
-                             "        <nc:contained-file-count />\n"
-                             "  </d:prop>\n"
-                             "</d:propfind>";
-
-
-#endif
-
-char *oc_size_attr = "<oc:size />";
-char *get_lastmodified_attr = "<d:getlastmodified />";
-char *get_contenttype_attr = "<d:getcontenttype />";
-
-instance_prop_t _instance_properties;
+instance_prop_t _nc_instance_properties;
 
 struct req_type_info_t{
     char filename[200];
@@ -54,10 +20,7 @@ bool file_is_cached(const char *filename, struct req_type_info_t* req_info) {
     bool same_filename = !strcmp(filename, req_info->filename);
     bool expired = (time(NULL) - req_info->req_time) > CACHING_TIME;
 
-    if (same_filename && !expired)
-        return true;
-
-    return false;
+    return (same_filename && !expired);
 }
 
 #endif
@@ -83,7 +46,7 @@ size_t download_file_memory_callback(void *contents, size_t size, size_t nmemb, 
 
 void setCurlOptions(CURL* curl_handle, const char *reqURL) {
     curl_easy_setopt(curl_handle, CURLOPT_URL, reqURL);
-    curl_easy_setopt(curl_handle, CURLOPT_USERPWD, _instance_properties.authentication);
+    curl_easy_setopt(curl_handle, CURLOPT_USERPWD, _nc_instance_properties.authentication);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 }
@@ -91,9 +54,9 @@ void setCurlOptions(CURL* curl_handle, const char *reqURL) {
 
 char *generateReqUrl(const char *filename) {
     static char fileurl[MAX_URL_LENGTH];
-    const int strsize = strlen(filename) + strlen(_instance_properties.dav_url) + TERMINATING_CHAR_SIZE;
+    const int strsize = strlen(filename) + strlen(_nc_instance_properties.dav_url) + TERMINATING_CHAR_SIZE;
     memset(fileurl, TERMINATING_CHAR, strsize);
-    strcat(fileurl, _instance_properties.dav_url);
+    strcat(fileurl, _nc_instance_properties.dav_url);
     strcat(fileurl, filename);
     return fileurl;
 }
@@ -103,6 +66,10 @@ char *create_req_body(req_prop_type_t req_type) {
     static char req_body[220];
     char *req_body_attr;
     switch (req_type) {
+#ifdef CACHING
+        case req_all:
+            return propfind_request_all;
+#endif
         case oc_size:
             req_body_attr = oc_size_attr;
             break;
@@ -112,16 +79,12 @@ char *create_req_body(req_prop_type_t req_type) {
         case get_contenttype:
             req_body_attr = get_contenttype_attr;
             break;
-#ifdef CACHING
-        case req_all:
-            return propfind_request_all;
-#endif
         default:
             return NULL;
     }
     const int sizeof_req_body_attr = strlen(req_body_attr);
     const int sizeof_empty_req_body = strlen(empty_req_body);
-    const int req_body_size = sizeof_req_body_attr + sizeof_empty_req_body + 1;
+    const int req_body_size = sizeof_req_body_attr + sizeof_empty_req_body + TERMINATING_CHAR_SIZE;
     snprintf(req_body, req_body_size, empty_req_body, req_body_attr);
     return req_body;
 }
@@ -136,11 +99,10 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
 
     if (file_is_cached(filename, &req_info))
         return &g_chunk;
-    else {
-        req_info.req_time = time(NULL);
-        strcpy(req_info.filename, filename);
-        post_field = create_req_body(req_all);
-    }
+
+    req_info.req_time = time(NULL);
+    strcpy(req_info.filename, filename);
+    post_field = create_req_body(req_all);
 #else
     post_field = create_req_body(req_prop_type);
 #endif
@@ -169,10 +131,8 @@ int curl_status;
     if (file_is_cached(filename, &req_info))
         return 0;
 
-    else {
-        req_info.req_time = time(NULL);
-        strcpy(req_info.filename, filename);
-    }
+    req_info.req_time = time(NULL);
+    strcpy(req_info.filename, filename);
 #endif
 
     char *url = generateReqUrl(filename);
