@@ -31,10 +31,19 @@ struct req_memory {
 };
 
 typedef enum {
-    req_all,
-    oc_size,
-    get_lastmodified,
-    get_contenttype,
+    oc_size_req = 0,
+    lastmodified_req,
+    contenttype_req,
+    etag_req,
+    resource_type_req,
+    file_id_req,
+    permissions_req,
+    content_length_req,
+    has_preview_req,
+    favorite_req,
+    comments_unread_req,
+    owner_display_name_req,
+    req_all
 }req_prop_type_t;
 
 typedef struct {

@@ -19,5 +19,23 @@ size_t get_file_size(const char * filename);
 
 void download_file(const char * filename, const char * loc);
 
+char *get_etag(const char *filename);
+
+char *get_resource_type(const char *filename);
+
+char *get_file_id(const char *filename);
+
+char *get_permissions(const char *filename);
+
+char *get_content_length(const char *filename);
+
+char *file_has_preview(const char *filename);
+
+char *file_is_favorite(const char *filename);
+
+char *file_has_unread_comments(const char *filename);
+
+char *file_owner(const char *filename);
+
 
 #endif //NEXTCLOUD_API_GRABBER_LIBRARY_H

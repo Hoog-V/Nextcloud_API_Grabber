@@ -64,24 +64,10 @@ char *generateReqUrl(const char *filename) {
 
 char *create_req_body(req_prop_type_t req_type) {
     static char req_body[220];
-    char *req_body_attr;
-    switch (req_type) {
 #ifdef CACHING
-        case req_all:
-            return propfind_request_all;
+    return propfind_request_all;
 #endif
-        case oc_size:
-            req_body_attr = oc_size_attr;
-            break;
-        case get_lastmodified:
-            req_body_attr = get_lastmodified_attr;
-            break;
-        case get_contenttype:
-            req_body_attr = get_contenttype_attr;
-            break;
-        default:
-            return NULL;
-    }
+    const char* req_body_attr = req_body_attributes[req_type];
     const int sizeof_req_body_attr = strlen(req_body_attr);
     const int sizeof_empty_req_body = strlen(empty_req_body);
     const int req_body_size = sizeof_req_body_attr + sizeof_empty_req_body + TERMINATING_CHAR_SIZE;
