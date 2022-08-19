@@ -19,6 +19,7 @@ typedef enum {
     propfind
 } req_type_t;
 
+
 struct req_memory {
     char memory[1024];
     size_t size;
@@ -35,7 +36,6 @@ typedef enum {
     lastmodified_req,
     contenttype_req,
     etag_req,
-    resource_type_req,
     file_id_req,
     permissions_req,
     content_length_req,

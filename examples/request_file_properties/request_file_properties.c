@@ -17,7 +17,6 @@ int main(int argc, char *argv[]){
     char *date_changed = get_date_changed(SERVER_FILEPATH);
     char *content_type = get_content_type(SERVER_FILEPATH);
     char *etag = get_etag(SERVER_FILEPATH);
-    char *resource_type = get_resource_type(SERVER_FILEPATH);
     char *file_id = get_file_id(SERVER_FILEPATH);
     char *permissions = get_permissions(SERVER_FILEPATH);
     char *content_length = get_content_length(SERVER_FILEPATH);
@@ -27,10 +26,9 @@ int main(int argc, char *argv[]){
     char *owner = file_owner(SERVER_FILEPATH);
 
     printf("File: %s, Size: %d, Content type: %s, Last modified: %s, etag_req: %s "
-           "resource_type: %s, file_id: %s, permissions: %s, content_length: %s, "
+           "file_id: %s, permissions: %s, content_length: %s, "
            "has_preview: %s, favorite: %s, unread_comments: %s, owner: %s\n", SERVER_FILEPATH, file_size, content_type,
-                                                                                                        date_changed, etag,
-                                                                                                        resource_type, file_id,
+                                                                                                        date_changed, etag, file_id,
                                                                                                         permissions, content_length,
                                                                                                         has_preview, favorite, unread_comments,
                                                                                                         owner);

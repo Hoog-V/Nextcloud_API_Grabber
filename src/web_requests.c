@@ -1,6 +1,7 @@
 #include <web_requests.h>
 #include <propfind_attr.h>
 #include <time.h>
+#include <request_parser.h>
 
 #ifdef CACHING
 #include <stdbool.h>
@@ -105,6 +106,7 @@ struct req_memory *propfind_req(const char *filename, req_prop_type_t req_prop_t
         g_chunk.curl_status = curl_easy_perform(g_chunk.curl_handle);
     }
     curl_easy_cleanup(g_chunk.curl_handle);
+    preparse_propfind_resp(g_chunk.memory);
     return &g_chunk;
 }
 

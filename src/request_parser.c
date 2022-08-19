@@ -16,6 +16,7 @@
 #define DECIMAL_BASE 10
 #define CLOCK_START_YEAR 1900
 
+char *req_memory_ptrs[11];
 
 /*
  * In the API the month is represented in text.
@@ -54,19 +55,25 @@ time_t formatted_string_to_time_since_epoch(const char *formatted_string) {
     return mktime(&parsed_tm_struct);
 }
 
-char *parse_propfind_resp(char *resp_body, const char *begin_tag, const char *end_tag) {
-    static char result[MAX_PROPFIND_RESP_SIZE];
+char *find_char_in_string(char *string, const char character_to_find){
+    do{
+        string++;
+    }while(*string!= character_to_find);
+    return string+1;
+}
 
-    const char *ptr_needle = strstr(resp_body, begin_tag);
-    const char *ptr_needle_end = strstr(resp_body, end_tag);
-
-    if (ptr_needle != NULL && ptr_needle_end != NULL) {
-        ptr_needle += strlen(begin_tag);
-
-        size_t needle_size = abs(ptr_needle - ptr_needle_end);
-        memcpy(result, ptr_needle, needle_size);
-
-        result[needle_size] = '\0';
+void preparse_propfind_resp(char *resp_body){
+    resp_body = strstr(resp_body, "<d:prop>");
+    for(int i =0; i<11; i++) {
+        resp_body = find_char_in_string(resp_body, '>');
+        resp_body = find_char_in_string(resp_body, '>');
+        req_memory_ptrs[i] = resp_body;
+        resp_body = find_char_in_string(resp_body, '<');
+        *(resp_body-1) = '\0';
     }
-    return result;
+}
+
+
+char *get_pointer_to_parsed_resp_data(enum req_data_types dataType){
+    return req_memory_ptrs[dataType];
 }

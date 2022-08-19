@@ -1,7 +1,6 @@
 #include <api_grabber.h>
 #include <web_requests.h>
 #include <request_parser.h>
-#include <xml_parser_strings.h>
 
 #include <curl/curl.h>
 #include <stdlib.h>
@@ -39,162 +38,127 @@ size_t get_file_size(const char *filename) {
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char *result_str = parse_propfind_resp(req_data->memory, oc_size_begin_tag, oc_size_end_tag);
+        char *result_str = get_pointer_to_parsed_resp_data(e_size);
         result = strtol(result_str, NULL, 10);
     }
     return result;
 }
 
 char *get_date_changed(const char *filename) {
-    static char date[DATE_STR_SIZE];
-
+    char *date;
     struct req_memory *req_data = propfind_req(filename, lastmodified_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_resp = parse_propfind_resp(req_data->memory, get_lastmodified_begin_tag,
-                                                 get_lastmodified_end_tag);
-        memcpy(date, parsed_resp, DATE_STR_SIZE);
+        date = get_pointer_to_parsed_resp_data(e_getlastmodified);
     }
     return date;
 }
 
 char *get_content_type(const char *filename) {
-    static char content_type[MAX_PROPFIND_RESP_SIZE];
-
+    char *content_type;
     struct req_memory *req_data = propfind_req(filename, contenttype_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, get_content_type_begin_tag,
-                                                     get_content_type_end_tag);
-        memcpy(content_type, parsed_response, strlen(parsed_response));
+        content_type = get_pointer_to_parsed_resp_data(e_getcontenttype);
+
     }
     return content_type;
 }
 
 char *get_etag(const char *filename) {
-    static char etag[41];
+    char *etag;
 
     struct req_memory *req_data = propfind_req(filename, etag_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, get_etag_begin_tag,
-                                                     get_etag_end_tag);
-        memcpy(etag, parsed_response, strlen(parsed_response));
+        etag = get_pointer_to_parsed_resp_data(e_getetag);
     }
     return etag;
 }
 
-char *get_resource_type(const char *filename) {
-    static char resource_type[41];
-
-    struct req_memory *req_data = propfind_req(filename, resource_type_req);
-    if (req_data->curl_status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
-    } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, resource_type_begin_tag,
-                                                                        resource_type_end_tag);
-        memcpy(resource_type, parsed_response, strlen(parsed_response));
-    }
-    return resource_type;
-}
-
 char *get_file_id(const char *filename) {
-    static char file_id[41];
+    char *file_id;
 
     struct req_memory *req_data = propfind_req(filename, file_id_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, file_id_begin_tag,
-                                                     file_id_end_tag);
-        memcpy(file_id, parsed_response, strlen(parsed_response));
+        file_id = get_pointer_to_parsed_resp_data(e_fileid);
     }
     return file_id;
 }
 
 char *get_permissions(const char *filename) {
-    static char permissions[41];
+    char *permissions;
 
     struct req_memory *req_data = propfind_req(filename, permissions_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, permissions_begin_tag,
-                                                     permissions_end_tag);
-        memcpy(permissions, parsed_response, strlen(parsed_response));
+        permissions = get_pointer_to_parsed_resp_data(e_permissions);
     }
     return permissions;
 }
 
 char *get_content_length(const char *filename) {
-    static char content_length[41];
+    char *content_length;
 
     struct req_memory *req_data = propfind_req(filename, content_length_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, get_content_length_begin_tag,
-                                                     get_content_length_end_tag);
-        memcpy(content_length, parsed_response, strlen(parsed_response));
+        content_length = get_pointer_to_parsed_resp_data(e_getcontentlength);
     }
     return content_length;
 }
 
 char *file_has_preview(const char *filename) {
-    static char preview[41];
+    char *preview;
 
     struct req_memory *req_data = propfind_req(filename, has_preview_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, has_preview_begin_tag,
-                                                     has_preview_end_tag);
-        memcpy(preview, parsed_response, strlen(parsed_response));
+        preview = get_pointer_to_parsed_resp_data(e_has_preview);
     }
     return preview;
 }
 
 char *file_is_favorite(const char *filename) {
-    static char favorite[41];
+    char *favorite;
 
     struct req_memory *req_data = propfind_req(filename, favorite_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, favorite_begin_tag,
-                                                     favorite_end_tag);
-        memcpy(favorite, parsed_response, strlen(parsed_response));
+        favorite = get_pointer_to_parsed_resp_data(e_favorite);
     }
     return favorite;
 }
 
 char *file_has_unread_comments(const char *filename) {
-    static char unread_comments[41];
+    char *unread_comments;
 
     struct req_memory *req_data = propfind_req(filename, comments_unread_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, comments_unread_begin_tag,
-                                                     comments_unread_end_tag);
-        memcpy(unread_comments, parsed_response, strlen(parsed_response));
+        unread_comments = get_pointer_to_parsed_resp_data(e_comments_unread);
     }
     return unread_comments;
 }
 
 char *file_owner(const char *filename) {
-    static char owner[41];
+    char *owner;
 
     struct req_memory *req_data = propfind_req(filename, owner_display_name_req);
     if (req_data->curl_status != CURLE_OK) {
         fprintf(stderr, "error: %s\n", curl_easy_strerror(req_data->curl_status));
     } else {
-        char * parsed_response = parse_propfind_resp(req_data->memory, owner_display_name_begin_tag,
-                                                     owner_display_name_end_tag);
-        memcpy(owner, parsed_response, strlen(parsed_response));
+        owner = get_pointer_to_parsed_resp_data(e_owner_display_name);
     }
     return owner;
 }
