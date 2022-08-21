@@ -1,5 +1,4 @@
 #include <web_requests.h>
-#include <request_parser.h>
 
 /*
  *  Macros to retrieve the index/ptr of the needed time/date info
@@ -16,6 +15,13 @@
 #define DECIMAL_BASE 10
 #define CLOCK_START_YEAR 1900
 
+#ifdef CACHING
+#define NUM_OF_ATTR 11
+#else
+#define NUM_OF_ATTR 1
+char attributes[11][60];
+#endif
+
 char *req_memory_ptrs[11];
 
 /*
@@ -23,8 +29,8 @@ char *req_memory_ptrs[11];
  * This means it has to be converted to a number to be used in the tm struct.
  */
 int month_str_to_int(const char *month) {
-    const char months[12][4] = {"Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0",
-                                "Jul\0", "Aug\0", "Sep\0", "Oct\0", "Nov\0", "Dec\0"};
+    const char months[12][3] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     for (int i = 0; i < 12; i++) {
         if (!strcmp(month, months[i])) {
             return i;
@@ -62,18 +68,31 @@ char *find_char_in_string(char *string, const char character_to_find){
     return string+1;
 }
 
-void preparse_propfind_resp(char *resp_body){
+void preparse_propfind_resp(char *resp_body, enum req_prop_type_t dataType){
     resp_body = strstr(resp_body, "<d:prop>");
-    for(int i =0; i<11; i++) {
+#ifdef CACHING
+    for(int i =0; i< NUM_OF_ATTR; i++) {
         resp_body = find_char_in_string(resp_body, '>');
         resp_body = find_char_in_string(resp_body, '>');
         req_memory_ptrs[i] = resp_body;
         resp_body = find_char_in_string(resp_body, '<');
         *(resp_body-1) = '\0';
     }
+#else
+    resp_body = find_char_in_string(resp_body, '>');
+    resp_body = find_char_in_string(resp_body, '>');
+    req_memory_ptrs[dataType] = resp_body;
+    resp_body = find_char_in_string(resp_body, '<');
+    *(resp_body-1) = '\0';
+    strcpy(attributes[dataType], req_memory_ptrs[dataType]);
+#endif
 }
 
 
-char *get_pointer_to_parsed_resp_data(enum req_data_types dataType){
+char *get_pointer_to_parsed_resp_data(enum req_prop_type_t dataType){
+#ifdef CACHING
     return req_memory_ptrs[dataType];
+#else
+    return attributes[dataType];
+#endif
 }

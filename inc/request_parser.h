@@ -10,7 +10,7 @@
 
 #define MAX_PROPFIND_RESP_SIZE 256
 
-enum req_data_types{
+enum req_prop_type_t{
     e_getlastmodified,
     e_getetag,
     e_getcontenttype,
@@ -25,10 +25,9 @@ enum req_data_types{
 };
 
 
+char *get_pointer_to_parsed_resp_data(enum req_prop_type_t dataType);
 
-char *get_pointer_to_parsed_resp_data(enum req_data_types dataType);
-
-void preparse_propfind_resp(char *resp_body);
+void preparse_propfind_resp(char *resp_body, enum req_prop_type_t  dataType);
 
 
 struct tm formatted_string_to_tm(const char * formatted_string);
