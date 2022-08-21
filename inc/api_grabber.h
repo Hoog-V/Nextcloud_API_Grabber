@@ -21,8 +21,6 @@ void download_file(const char * filename, const char * loc);
 
 char *get_etag(const char *filename);
 
-char *get_resource_type(const char *filename);
-
 char *get_file_id(const char *filename);
 
 char *get_permissions(const char *filename);

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 project(Nextcloud_API_Grabber C)
 
+add_compile_options(-O2)
 set(CMAKE_C_STANDARD 99)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/inc)
 file(GLOB_RECURSE INCLUDES "*inc/*.h")

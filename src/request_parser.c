@@ -1,5 +1,4 @@
 #include <web_requests.h>
-#include <request_parser.h>
 
 /*
  *  Macros to retrieve the index/ptr of the needed time/date info
@@ -16,14 +15,22 @@
 #define DECIMAL_BASE 10
 #define CLOCK_START_YEAR 1900
 
+#ifdef CACHING
+#define NUM_OF_ATTR 11
+#else
+#define NUM_OF_ATTR 1
+char attributes[11][60];
+#endif
+
+char *req_memory_ptrs[11];
 
 /*
  * In the API the month is represented in text.
  * This means it has to be converted to a number to be used in the tm struct.
  */
 int month_str_to_int(const char *month) {
-    const char months[12][4] = {"Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0",
-                                "Jul\0", "Aug\0", "Sep\0", "Oct\0", "Nov\0", "Dec\0"};
+    const char months[12][3] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     for (int i = 0; i < 12; i++) {
         if (!strcmp(month, months[i])) {
             return i;
@@ -54,19 +61,38 @@ time_t formatted_string_to_time_since_epoch(const char *formatted_string) {
     return mktime(&parsed_tm_struct);
 }
 
-char *parse_propfind_resp(char *resp_body, const char *begin_tag, const char *end_tag) {
-    static char result[MAX_PROPFIND_RESP_SIZE];
+char *find_char_in_string(char *string, const char character_to_find){
+    do{
+        string++;
+    }while(*string!= character_to_find);
+    return string+1;
+}
 
-    const char *ptr_needle = strstr(resp_body, begin_tag);
-    const char *ptr_needle_end = strstr(resp_body, end_tag);
-
-    if (ptr_needle != NULL && ptr_needle_end != NULL) {
-        ptr_needle += strlen(begin_tag);
-
-        size_t needle_size = abs(ptr_needle - ptr_needle_end);
-        memcpy(result, ptr_needle, needle_size);
-
-        result[needle_size] = '\0';
+void preparse_propfind_resp(char *resp_body, enum req_prop_type_t dataType){
+    resp_body = strstr(resp_body, "<d:prop>");
+#ifdef CACHING
+    for(int i =0; i< NUM_OF_ATTR; i++) {
+        resp_body = find_char_in_string(resp_body, '>');
+        resp_body = find_char_in_string(resp_body, '>');
+        req_memory_ptrs[i] = resp_body;
+        resp_body = find_char_in_string(resp_body, '<');
+        *(resp_body-1) = '\0';
     }
-    return result;
+#else
+    resp_body = find_char_in_string(resp_body, '>');
+    resp_body = find_char_in_string(resp_body, '>');
+    req_memory_ptrs[dataType] = resp_body;
+    resp_body = find_char_in_string(resp_body, '<');
+    *(resp_body-1) = '\0';
+    strcpy(attributes[dataType], req_memory_ptrs[dataType]);
+#endif
+}
+
+
+char *get_pointer_to_parsed_resp_data(enum req_prop_type_t dataType){
+#ifdef CACHING
+    return req_memory_ptrs[dataType];
+#else
+    return attributes[dataType];
+#endif
 }

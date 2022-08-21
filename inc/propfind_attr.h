@@ -1,7 +1,3 @@
-//
-// Created by victor on 17-8-22.
-//
-
 #ifndef NEXTCLOUD_API_GRABBER_PROPFIND_ATTR_H
 #define NEXTCLOUD_API_GRABBER_PROPFIND_ATTR_H
 
@@ -12,7 +8,6 @@ char *propfind_request_all = "<?xml version=\"1.0\"?>\n"
                              "        <d:getlastmodified />\n"
                              "        <d:getetag />\n"
                              "        <d:getcontenttype />\n"
-                             "        <d:resourcetype />\n"
                              "        <oc:fileid />\n"
                              "        <oc:permissions />\n"
                              "        <oc:size />\n"
@@ -34,8 +29,8 @@ const char *empty_req_body = "<?xml version=\"1.0\"?>\n"
                              "  </d:prop>\n"
                              "</d:propfind>";
 
-const char req_body_attributes[][25] = {"oc:size", "d:getlastmodified", "d:getcontenttype","d:getetag",
-                                          "d:resourcetype", "oc:fileid", "oc:permissions", "d:getcontentlength",
-                                          "nc:has-preview", "oc:favorite", "oc:comments-unread", "oc:owner-display-name"};
+const char req_body_attributes[][25] = {"d:getlastmodified","d:getetag", "d:getcontenttype",
+                                        "oc:fileid", "oc:permissions", "oc:size", "d:getcontentlength","nc:has-preview",
+                                        "oc:favorite", "oc:comments-unread", "oc:owner-display-name"};
 
 #endif //NEXTCLOUD_API_GRABBER_PROPFIND_ATTR_H
