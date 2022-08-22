@@ -15,11 +15,8 @@
 #define DECIMAL_BASE 10
 #define CLOCK_START_YEAR 1900
 
-#ifdef CACHING
-#define NUM_OF_ATTR 11
-#else
-#define NUM_OF_ATTR 1
-char attributes[11][60];
+#ifndef CACHING
+char attributes[NUM_OF_ATTR][60];
 #endif
 
 char *req_memory_ptrs[11];
@@ -68,7 +65,7 @@ char *find_char_in_string(char *string, const char character_to_find){
     return string+1;
 }
 
-void preparse_propfind_resp(char *resp_body, enum req_prop_type_t dataType){
+void preparse_propfind_resp(char *resp_body, const enum req_prop_type_t dataType){
     resp_body = strstr(resp_body, "<d:prop>");
 #ifdef CACHING
     for(int i =0; i< NUM_OF_ATTR; i++) {
