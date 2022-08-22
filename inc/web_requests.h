@@ -17,6 +17,7 @@ typedef struct {
 }instance_prop_t;
 
 #define WEB_REQ_OK 0
+#define FILE_WRITE_ERROR 200
 
 extern instance_prop_t _nc_instance_properties;
 

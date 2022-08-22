@@ -37,6 +37,10 @@ bool file_is_cached(const char *filename, struct req_type_info_t* req_info) {
 
 
 const char *get_error_msg(const int error_code){
+    if(error_code == FILE_WRITE_ERROR)
+        return "Error writing to file..";
+    else if (error_code == PARSING_ERROR)
+        return "Error parsing XML request..";
     return curl_easy_strerror(error_code);
 }
 
@@ -122,10 +126,12 @@ const int propfind_req(const char *filename, const enum req_prop_type_t req_prop
     if(curl_status == CURLE_OK) {
         req_info.req_time = time(NULL);
         strcpy(req_info.filename, filename);
-        preparse_propfind_resp(g_chunk.memory, req_prop_type);
+        int xml_status = preparse_propfind_resp(g_chunk.memory, req_prop_type);
+        return xml_status;
     }
 #endif
-    return curl_status;
+return curl_status;
+
 }
 
 const int download_req(const char *filename, const char *loc) {
@@ -141,7 +147,11 @@ int curl_status;
     if (curl_handle) {
         FILE *fp;
         fp = fopen(loc, "w");
-
+        if(fp == NULL){
+            ERROR_HANDLER("Writing file failed!");
+            curl_easy_cleanup(curl_handle);
+            return FILE_WRITE_ERROR;
+        }
         setCurlOptions(curl_handle, url);
         curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, download_file_memory_callback);
         curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *) fp);
