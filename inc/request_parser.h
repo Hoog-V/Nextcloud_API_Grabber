@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_PROPFIND_RESP_SIZE 256
+#define PARSING_ERROR 300
 
 enum req_prop_type_t{
     e_getlastmodified,
@@ -25,9 +25,9 @@ enum req_prop_type_t{
 };
 
 
-char *get_pointer_to_parsed_resp_data(enum req_prop_type_t dataType);
+char *get_pointer_to_parsed_resp_data(const enum req_prop_type_t dataType);
 
-void preparse_propfind_resp(char *resp_body, enum req_prop_type_t  dataType);
+int preparse_propfind_resp(char *resp_body, const enum req_prop_type_t dataType);
 
 
 struct tm formatted_string_to_tm(const char * formatted_string);

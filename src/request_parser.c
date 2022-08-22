@@ -15,11 +15,8 @@
 #define DECIMAL_BASE 10
 #define CLOCK_START_YEAR 1900
 
-#ifdef CACHING
-#define NUM_OF_ATTR 11
-#else
-#define NUM_OF_ATTR 1
-char attributes[11][60];
+#ifndef CACHING
+char attributes[NUM_OF_ATTR][60];
 #endif
 
 char *req_memory_ptrs[11];
@@ -62,30 +59,43 @@ time_t formatted_string_to_time_since_epoch(const char *formatted_string) {
 }
 
 char *find_char_in_string(char *string, const char character_to_find){
+    if(string == NULL)
+        return NULL;
     do{
         string++;
-    }while(*string!= character_to_find);
+    }while(*string != character_to_find && *string != '\0');
+    if(*string == '\0')
+        return NULL;
     return string+1;
 }
 
-void preparse_propfind_resp(char *resp_body, enum req_prop_type_t dataType){
+int preparse_propfind_resp(char *resp_body, const enum req_prop_type_t dataType){
     resp_body = strstr(resp_body, "<d:prop>");
+    if(resp_body == NULL)
+        return PARSING_ERROR;
 #ifdef CACHING
     for(int i =0; i< NUM_OF_ATTR; i++) {
         resp_body = find_char_in_string(resp_body, '>');
         resp_body = find_char_in_string(resp_body, '>');
         req_memory_ptrs[i] = resp_body;
         resp_body = find_char_in_string(resp_body, '<');
-        *(resp_body-1) = '\0';
+        if(resp_body != NULL)
+            *(resp_body-1) = '\0';
+        else
+            return PARSING_ERROR;
     }
 #else
     resp_body = find_char_in_string(resp_body, '>');
     resp_body = find_char_in_string(resp_body, '>');
     req_memory_ptrs[dataType] = resp_body;
     resp_body = find_char_in_string(resp_body, '<');
-    *(resp_body-1) = '\0';
+    if(resp_body != NULL)
+      *(resp_body-1) = '\0';
+    else
+       return PARSING_ERROR;
     strcpy(attributes[dataType], req_memory_ptrs[dataType]);
 #endif
+    return 0;
 }
 
 

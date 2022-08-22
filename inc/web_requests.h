@@ -16,10 +16,15 @@ typedef struct {
     char *authentication;
 }instance_prop_t;
 
+#define WEB_REQ_OK 0
+#define FILE_WRITE_ERROR 200
+
 extern instance_prop_t _nc_instance_properties;
 
-int download_req(const char* filename, const char* loc);
+const int download_req(const char* filename, const char* loc);
 
-int propfind_req(const char *filename, enum req_prop_type_t req_prop_type);
+const int propfind_req(const char *filename, const enum req_prop_type_t req_prop_type);
+
+const char *get_error_msg(const int error_code);
 
 #endif //NEXTCLOUD_API_GRABBER_WEB_REQUESTS_H

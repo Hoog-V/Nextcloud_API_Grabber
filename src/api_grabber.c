@@ -23,8 +23,8 @@ int init_api_grabber(api_grabber_prop_t properties){
 void download_file(const char *filename, const char *loc) {
     int status = download_req(filename, loc);
 
-    if (status != 0) {
-        fprintf(stderr, "error: couldn't download file\n");
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     }
 }
 
@@ -32,8 +32,8 @@ size_t get_file_size(const char *filename) {
     size_t result = 0;
 
     int status = propfind_req(filename, e_size);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         char *result_str = get_pointer_to_parsed_resp_data(e_size);
         result = strtol(result_str, NULL, 10);
@@ -44,8 +44,8 @@ size_t get_file_size(const char *filename) {
 char *get_date_changed(const char *filename) {
     char *date;
     int status = propfind_req(filename, e_getlastmodified);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         date = get_pointer_to_parsed_resp_data(e_getlastmodified);
     }
@@ -55,8 +55,8 @@ char *get_date_changed(const char *filename) {
 char *get_content_type(const char *filename) {
     char *content_type;
     int status = propfind_req(filename, e_getcontenttype);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         content_type = get_pointer_to_parsed_resp_data(e_getcontenttype);
 
@@ -68,8 +68,8 @@ char *get_etag(const char *filename) {
     char *etag;
 
     int status = propfind_req(filename, e_getetag);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         etag = get_pointer_to_parsed_resp_data(e_getetag);
     }
@@ -80,8 +80,8 @@ char *get_file_id(const char *filename) {
     char *file_id;
 
     int status = propfind_req(filename, e_fileid);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         file_id = get_pointer_to_parsed_resp_data(e_fileid);
     }
@@ -92,8 +92,8 @@ char *get_permissions(const char *filename) {
     char *permissions;
 
     int status = propfind_req(filename, e_permissions);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         permissions = get_pointer_to_parsed_resp_data(e_permissions);
     }
@@ -104,8 +104,8 @@ char *get_content_length(const char *filename) {
     char *content_length;
 
     int status = propfind_req(filename, e_getcontentlength);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         content_length = get_pointer_to_parsed_resp_data(e_getcontentlength);
     }
@@ -116,8 +116,8 @@ char *file_has_preview(const char *filename) {
     char *preview;
 
     int status = propfind_req(filename, e_has_preview);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         preview = get_pointer_to_parsed_resp_data(e_has_preview);
     }
@@ -128,8 +128,8 @@ char *file_is_favorite(const char *filename) {
     char *favorite;
 
     int status = propfind_req(filename, e_favorite);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         favorite = get_pointer_to_parsed_resp_data(e_favorite);
     }
@@ -140,8 +140,8 @@ char *file_has_unread_comments(const char *filename) {
     char *unread_comments;
 
     int status = propfind_req(filename, e_comments_unread);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         unread_comments = get_pointer_to_parsed_resp_data(e_comments_unread);
     }
@@ -152,8 +152,8 @@ char *file_owner(const char *filename) {
     char *owner;
 
     int status  = propfind_req(filename, e_owner_display_name);
-    if (status != CURLE_OK) {
-        fprintf(stderr, "error: %s\n", curl_easy_strerror(status));
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
     } else {
         owner = get_pointer_to_parsed_resp_data(e_owner_display_name);
     }

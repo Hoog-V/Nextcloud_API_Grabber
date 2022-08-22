@@ -18,6 +18,12 @@
 #define MAX_URL_LENGTH 512
 //The maximum length in characters of any filepath used in the library.
 #define MAX_FILE_PATH_LENGTH 200
+//The number of properties that can be requested (I call them (xml) attributes throughout the program)
+#define NUM_OF_ATTR 11
 
+/* Define custom error_handler
+ * This is useful when using a gui to link in a popup with an error message.
+ */
+#define ERROR_HANDLER(str) fprintf(stderr, "ERROR: %s \n", str)
 
 #endif //NEXTCLOUD_API_GRABBER_API_GRABBER_SETTINGS_H
