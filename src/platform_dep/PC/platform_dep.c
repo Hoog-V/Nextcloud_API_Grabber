@@ -1,4 +1,5 @@
 #include <web_requests.h>
+#include <web_request_tools.h>
 #include <propfind_attr.h>
 #include <time.h>
 #include <request_parser.h>
@@ -18,8 +19,6 @@ struct req_type_info_t{
                                         //Adding the url size to it because it is included in req result
 #endif
 
-instance_prop_t _nc_instance_properties;
-
 
 
 struct req_memory {
@@ -34,7 +33,6 @@ bool file_is_cached(const char *filename, struct req_type_info_t* req_info) {
     return (same_filename && !expired);
 }
 #endif
-
 
 const char *get_error_msg(const int error_code){
     if(error_code == FILE_WRITE_ERROR)
@@ -68,32 +66,6 @@ void setCurlOptions(CURL* curl_handle, const char *reqURL) {
     curl_easy_setopt(curl_handle, CURLOPT_USERPWD, _nc_instance_properties.authentication);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-}
-
-
-char *generateReqUrl(const char *filename) {
-    static char file_url[MAX_URL_LENGTH];
-    const unsigned long strsize = strlen(filename) + strlen(_nc_instance_properties.dav_url) + TERMINATING_CHAR_SIZE;
-    memset(file_url, TERMINATING_CHAR, strsize);
-    strcat(file_url, _nc_instance_properties.dav_url);
-    strcat(file_url, filename);
-    return file_url;
-}
-
-
-char *create_req_body(const enum req_prop_type_t req_type) {
-#ifdef CACHING
-    return propfind_request_all;
-#else
-    static char req_body[220];
-    const char* req_body_attr = req_body_attributes[req_type];
-    const unsigned long sizeof_req_body_attr = strlen(req_body_attr);
-    const unsigned long sizeof_empty_req_body = strlen(empty_req_body);
-    const unsigned long req_body_size = sizeof_req_body_attr + sizeof_empty_req_body + TERMINATING_CHAR_SIZE;
-    snprintf(req_body, req_body_size, empty_req_body, req_body_attr);
-    return req_body;
-#endif
-
 }
 
 const int propfind_req(const char *filename, const enum req_prop_type_t req_prop_type) {

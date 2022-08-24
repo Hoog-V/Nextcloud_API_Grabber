@@ -1,9 +1,10 @@
 #include <api_grabber.h>
 #include <web_requests.h>
+#include <web_request_tools.h>
 #include <request_parser.h>
 
-#include <curl/curl.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 int init_api_grabber(api_grabber_prop_t properties){
     const char * dav_url_postfix = "/remote.php/dav/files/";
@@ -42,7 +43,7 @@ size_t get_file_size(const char *filename) {
 }
 
 char *get_date_changed(const char *filename) {
-    char *date;
+    char *date = "NULL";
     int status = propfind_req(filename, e_getlastmodified);
     if (status != WEB_REQ_OK) {
         ERROR_HANDLER(get_error_msg(status));
@@ -53,7 +54,7 @@ char *get_date_changed(const char *filename) {
 }
 
 char *get_content_type(const char *filename) {
-    char *content_type;
+    char *content_type= "NULL";
     int status = propfind_req(filename, e_getcontenttype);
     if (status != WEB_REQ_OK) {
         ERROR_HANDLER(get_error_msg(status));
@@ -65,7 +66,7 @@ char *get_content_type(const char *filename) {
 }
 
 char *get_etag(const char *filename) {
-    char *etag;
+    char *etag= "NULL";
 
     int status = propfind_req(filename, e_getetag);
     if (status != WEB_REQ_OK) {
@@ -77,7 +78,7 @@ char *get_etag(const char *filename) {
 }
 
 char *get_file_id(const char *filename) {
-    char *file_id;
+    char *file_id= "NULL";
 
     int status = propfind_req(filename, e_fileid);
     if (status != WEB_REQ_OK) {
@@ -89,7 +90,7 @@ char *get_file_id(const char *filename) {
 }
 
 char *get_permissions(const char *filename) {
-    char *permissions;
+    char *permissions= "NULL";
 
     int status = propfind_req(filename, e_permissions);
     if (status != WEB_REQ_OK) {
@@ -101,7 +102,7 @@ char *get_permissions(const char *filename) {
 }
 
 char *get_content_length(const char *filename) {
-    char *content_length;
+    char *content_length= "NULL";
 
     int status = propfind_req(filename, e_getcontentlength);
     if (status != WEB_REQ_OK) {
@@ -113,8 +114,7 @@ char *get_content_length(const char *filename) {
 }
 
 char *file_has_preview(const char *filename) {
-    char *preview;
-
+    char *preview= "NULL";
     int status = propfind_req(filename, e_has_preview);
     if (status != WEB_REQ_OK) {
         ERROR_HANDLER(get_error_msg(status));
@@ -125,7 +125,7 @@ char *file_has_preview(const char *filename) {
 }
 
 char *file_is_favorite(const char *filename) {
-    char *favorite;
+    char *favorite= "NULL";
 
     int status = propfind_req(filename, e_favorite);
     if (status != WEB_REQ_OK) {
@@ -137,7 +137,7 @@ char *file_is_favorite(const char *filename) {
 }
 
 char *file_has_unread_comments(const char *filename) {
-    char *unread_comments;
+    char *unread_comments= "NULL";
 
     int status = propfind_req(filename, e_comments_unread);
     if (status != WEB_REQ_OK) {
@@ -149,7 +149,7 @@ char *file_has_unread_comments(const char *filename) {
 }
 
 char *file_owner(const char *filename) {
-    char *owner;
+    char *owner= "NULL";
 
     int status  = propfind_req(filename, e_owner_display_name);
     if (status != WEB_REQ_OK) {
