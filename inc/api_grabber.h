@@ -5,8 +5,8 @@
 
 typedef struct {
     char * nextcloud_url;
-    char * authentication;
-    char * user;
+    char * username;
+    char * password;
 }api_grabber_prop_t;
 
 int init_api_grabber(api_grabber_prop_t properties);

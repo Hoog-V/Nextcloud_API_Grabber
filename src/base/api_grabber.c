@@ -10,14 +10,15 @@ int init_api_grabber(api_grabber_prop_t properties){
     const char * dav_url_postfix = "/remote.php/dav/files/";
 
     //Compose the webdev url out of the base url and user info from the properties struct
-    int size = strlen(properties.nextcloud_url) + strlen(properties.user) + strlen(dav_url_postfix) + 2; //+2 to compensate for the '\0' and '/' char
+    int size = strlen(properties.nextcloud_url) + strlen(properties.username) + strlen(dav_url_postfix) + 2; //+2 to compensate for the '\0' and '/' char
     strcat(_nc_instance_properties.dav_url, properties.nextcloud_url);
     strcat(_nc_instance_properties.dav_url, dav_url_postfix);
-    strcat(_nc_instance_properties.dav_url, properties.user);
+    strcat(_nc_instance_properties.dav_url, properties.username);
     strcat(_nc_instance_properties.dav_url, "/");
     _nc_instance_properties.dav_url[size] = '\0';
 
-    _nc_instance_properties.authentication = properties.authentication;
+    _nc_instance_properties.username = properties.username;
+    _nc_instance_properties.password = properties.password;
     return 0;
 }
 

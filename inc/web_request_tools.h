@@ -11,7 +11,8 @@
 
 typedef struct {
     char dav_url[MAX_URL_LENGTH];
-    char *authentication;
+    char *username;
+    char *password;
 }instance_prop_t;
 
 

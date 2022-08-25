@@ -17,4 +17,6 @@ int download_req(const char* filename, const char* loc);
 
 int propfind_req(const char *filename, const enum req_prop_type_t req_prop_type);
 
+int init_platform();
+
 #endif //NEXTCLOUD_API_GRABBER_WEB_REQUESTS_H
