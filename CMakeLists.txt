@@ -11,6 +11,6 @@ if(ESP_PLATFORM)
     file(GLOB_RECURSE SOURCES "src/base/*.c")
     idf_component_register(SRCS ${SOURCES} "src/platform_dep/ESP32/platform_dep.c"
                            INCLUDE_DIRS "inc"
-                           REQUIRES esp-tls nvs_flash esp_http_client protocol_examples_common)
+                           REQUIRES esp-tls nvs_flash esp_http_client protocol_examples_common spiffs)
 
 endif()
