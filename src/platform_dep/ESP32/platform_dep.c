@@ -12,13 +12,6 @@
 #include "esp_err.h"
 #include "esp_spiffs.h"
 
-esp_vfs_spiffs_conf_t conf = {
-        .base_path = "/spiffs",
-        .partition_label = NULL,
-        .max_files = 5,
-        .format_if_mount_failed = true
-};
-
 static const char *TAG = "WEB_REQUESTS";
 
 #ifdef CACHING
@@ -81,6 +74,7 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt) {
 
 
 esp_err_t _download_event_handler(esp_http_client_event_t *evt) {
+     static int output_len;       // Stores number of bytes read
     switch (evt->event_id) {
         case HTTP_EVENT_ERROR:
             break;
@@ -91,19 +85,23 @@ esp_err_t _download_event_handler(esp_http_client_event_t *evt) {
         case HTTP_EVENT_ON_HEADER:
             break;
         case HTTP_EVENT_ON_DATA:
-            if (esp_http_client_is_chunked_response(evt->client)) {
-
+        {
+            if (!esp_http_client_is_chunked_response(evt->client)) {
+        FILE *fp = (FILE *) evt->user_data;
+        fwrite(evt->data,1,evt->data_len,fp);
+        output_len += evt->data_len;
             }
-                break;
+        }
+        break;
                 case HTTP_EVENT_ON_FINISH: {
-                    FILE *fp = (FILE *) evt->user_data;
-                    fwrite(evt->data,evt->data_len,evt->data_len,fp);
+                    output_len = 0;
                     break;
                 }
                 case HTTP_EVENT_DISCONNECTED: {
                     int mbedtls_err = 0;
                     esp_err_t err = esp_tls_get_and_clear_last_error(evt->data, &mbedtls_err, NULL);
                     if (err != 0) {
+                        output_len = 0;
                         ESP_LOGI(TAG, "Last esp error code: 0x%x", err);
                         ESP_LOGI(TAG, "Last mbedtls failure: 0x%x", mbedtls_err);
                     }
@@ -173,16 +171,6 @@ esp_err_t _download_event_handler(esp_http_client_event_t *evt) {
     int download_req(const char *filename, const char *loc) {
         // Use settings defined above to initialize and mount SPIFFS filesystem.
         // Note: esp_vfs_spiffs_register is an all-in-one convenience function.
-        esp_err_t ret = esp_vfs_spiffs_register(&conf);
-        if (ret != ESP_OK) {
-            if (ret == ESP_FAIL) {
-                ESP_LOGE(TAG, "Failed to mount or format filesystem");
-            } else if (ret == ESP_ERR_NOT_FOUND) {
-                ESP_LOGE(TAG, "Failed to find SPIFFS partition");
-            } else {
-                ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-            }
-        }
 #ifdef CACHING
         static struct req_type_info_t req_info;
 
@@ -190,6 +178,7 @@ esp_err_t _download_event_handler(esp_http_client_event_t *evt) {
             return 0;
 #endif
         char *url = generateReqUrl(filename);
+        remove(loc);
         FILE *fp;
         fp = fopen(loc, "w");
         if (fp == NULL) {
