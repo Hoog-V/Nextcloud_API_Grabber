@@ -1,12 +1,16 @@
-cmake_minimum_required(VERSION 3.23)
-project(Nextcloud_API_Grabber C)
+cmake_minimum_required(VERSION 3.20)
 
-add_compile_options(-O2)
-set(CMAKE_C_STANDARD 99)
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/inc)
-file(GLOB_RECURSE INCLUDES "*inc/*.h")
-file(GLOB_RECURSE SOURCES "src/*.c")
+#INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/inc)
 
-add_library(Nextcloud_API_Grabber ${SOURCES} ${INCLUDES})
 
-add_subdirectory(examples)
+#add_library(Nextcloud_API_Grabber ${SOURCES} ${INCLUDES})
+
+#add_subdirectory(examples)
+
+if(ESP_PLATFORM)
+    file(GLOB_RECURSE SOURCES "src/base/*.c")
+    idf_component_register(SRCS ${SOURCES} "src/platform_dep/ESP32/platform_dep.c"
+                           INCLUDE_DIRS "inc"
+                           REQUIRES esp-tls nvs_flash esp_http_client protocol_examples_common spiffs)
+
+endif()
