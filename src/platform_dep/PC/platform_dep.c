@@ -1,8 +1,8 @@
 #include <web_requests.h>
 #include <web_request_tools.h>
-#include <propfind_attr.h>
 #include <time.h>
 #include <request_parser.h>
+#include <curl/curl.h>
 
 #ifdef CACHING
 #include <stdbool.h>
@@ -63,7 +63,8 @@ size_t download_file_memory_callback(void *contents, size_t size, size_t nmemb, 
 
 void setCurlOptions(CURL* curl_handle, const char *reqURL) {
     curl_easy_setopt(curl_handle, CURLOPT_URL, reqURL);
-    curl_easy_setopt(curl_handle, CURLOPT_USERPWD, _nc_instance_properties.authentication);
+    curl_easy_setopt(curl_handle, CURLOPT_USERNAME, _nc_instance_properties.username);
+    curl_easy_setopt(curl_handle, CURLOPT_PASSWORD, _nc_instance_properties.password);
     curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 }

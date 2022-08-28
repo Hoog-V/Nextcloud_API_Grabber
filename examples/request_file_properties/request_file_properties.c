@@ -3,14 +3,14 @@
 #define SERVER_FILEPATH "Photos/Birdie.jpg" //Replace spaces with %20
 
 #define NEXTCLOUD_BASE_URL "https://cloud.example.com"
-#define NEXTCLOUD_AUTH "USER:PASSWORD"
 #define NEXTCLOUD_USER "USER"
+#define NEXTCLOUD_PASSWORD "PASSWORD"
 
 int main(int argc, char *argv[]){
     api_grabber_prop_t properties;
-    properties.authentication = NEXTCLOUD_AUTH;
     properties.nextcloud_url= NEXTCLOUD_BASE_URL;
-    properties.user = NEXTCLOUD_USER;
+    properties.username = NEXTCLOUD_USER;
+    properties.password = NEXTCLOUD_PASSWORD;
     init_api_grabber(properties);
 
     int file_size = get_file_size(SERVER_FILEPATH);
