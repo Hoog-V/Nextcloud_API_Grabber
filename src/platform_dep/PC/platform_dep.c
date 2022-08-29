@@ -65,14 +65,22 @@ size_t download_file_memory_callback(void *contents, size_t size, size_t nmemb, 
     return real_size;
 }
 
-size_t read_callback(void *contents, size_t size, size_t nmemb, void *userp)
+static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)
 {
-    size_t real_size = size * nmemb;
+    size_t retcode;
+    unsigned long nread;
 
-    FILE *fp = (FILE *) userp;
-    fread(contents, real_size, size, fp);
+    /* in real-world cases, this would probably get this data differently
+       as this fread() stuff is exactly what the library already would do
+       by default internally */
+    retcode = fread(ptr, size, nmemb, stream);
 
-    return real_size;
+    if(retcode > 0) {
+        nread = (unsigned long)retcode;
+        fprintf(stderr, "*** We read %lu bytes from file\n", nread);
+    }
+
+    return retcode;
 }
 
 
@@ -166,13 +174,14 @@ int upload_req(const char *filesystem_path, const char *nc_path) {
     if (file_is_cached(nc_path, &req_info))
         return 0;
 #endif
-    struct stat file_info;
+    static struct stat file_info;
     stat(filesystem_path, &file_info);
+    printf("size:%d \n", file_info.st_size);
     char *url = generateReqUrl(nc_path);
     CURL *curl_handle = curl_easy_init();
     if (curl_handle) {
         FILE *fp;
-        fp = fopen(filesystem_path, "rb");
+        fp = fopen(filesystem_path, "r");
         if (fp == NULL) {
             ERROR_HANDLER("Reading file failed!");
             curl_easy_cleanup(curl_handle);
@@ -180,11 +189,11 @@ int upload_req(const char *filesystem_path, const char *nc_path) {
         }
         setCurlOptions(curl_handle, url);
         curl_easy_setopt(curl_handle, CURLOPT_READFUNCTION, read_callback);
-        curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *) fp);
+        curl_easy_setopt(curl_handle, CURLOPT_PUT, 1L);
         /* enable uploading (implies PUT over HTTP) */
         curl_easy_setopt(curl_handle, CURLOPT_UPLOAD, 1L);
         /* now specify which file to upload */
-        curl_easy_setopt(curl_handle, CURLOPT_READDATA, filesystem_path);
+        curl_easy_setopt(curl_handle, CURLOPT_READDATA, (void*)fp);
         /* provide the size of the upload, we specicially typecast the value
    to curl_off_t since we must be sure to use the correct data size */
         curl_easy_setopt(curl_handle, CURLOPT_INFILESIZE_LARGE,
@@ -201,4 +210,5 @@ int upload_req(const char *filesystem_path, const char *nc_path) {
         strcpy(req_info.filename, nc_path);
     }
 #endif
+return curl_status;
 }
