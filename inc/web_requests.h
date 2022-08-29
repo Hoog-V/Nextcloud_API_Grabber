@@ -9,11 +9,14 @@
 
 #define WEB_REQ_OK 0
 #define FILE_WRITE_ERROR 200
+#define FILE_READ_ERROR 400
 
 
 const char *get_error_msg(const int error_code);
 
 int download_req(const char* filename, const char* loc);
+
+int upload_req(const char* filesystem_path, const char* nc_path);
 
 int propfind_req(const char *filename, const enum req_prop_type_t req_prop_type);
 
