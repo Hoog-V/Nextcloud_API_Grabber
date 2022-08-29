@@ -1,0 +1,24 @@
+var NAVTREEINDEX0 =
+{
+"annotated.html":[0,0],
+"api__grabber_8c_source.html":[1,0,0,0],
+"api__grabber_8h_source.html":[1,0,1,0],
+"api__grabber__settings_8h_source.html":[1,0,1,1],
+"classes.html":[0,1],
+"dir_0af1587c8378955de40f48b4bd1869f0.html":[1,0,0],
+"dir_bfccd401955b95cf8c75461437045ac0.html":[1,0,1],
+"dir_e5b2ecf6d1ef0072faef0658350a8934.html":[1,0,2],
+"files.html":[1,0],
+"index.html":[],
+"pages.html":[],
+"platform__dep_8c_source.html":[1,0,2,0],
+"propfind__attr_8h_source.html":[1,0,1,2],
+"request__parser_8c_source.html":[1,0,0,1],
+"request__parser_8h_source.html":[1,0,1,3],
+"structapi__grabber__prop__t.html":[0,0,0],
+"structinstance__prop__t.html":[0,0,1],
+"structreq__memory.html":[0,0,2],
+"web__request__tools_8c_source.html":[1,0,0,2],
+"web__request__tools_8h_source.html":[1,0,1,4],
+"web__requests_8h_source.html":[1,0,1,5]
+};
