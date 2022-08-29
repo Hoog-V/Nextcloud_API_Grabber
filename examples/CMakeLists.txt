@@ -5,3 +5,7 @@ target_link_libraries(download_file PRIVATE Nextcloud_API_Grabber)
 add_executable(request_file_properties "request_file_properties/request_file_properties.c")
 target_link_libraries(request_file_properties PRIVATE curl)
 target_link_libraries(request_file_properties PRIVATE Nextcloud_API_Grabber)
+
+add_executable(upload_file "upload_file/upload_file.c")
+target_link_libraries(upload_file PRIVATE curl)
+target_link_libraries(upload_file PRIVATE Nextcloud_API_Grabber)
