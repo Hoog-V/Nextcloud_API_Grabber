@@ -11,13 +11,15 @@ typedef struct {
 
 int init_api_grabber(api_grabber_prop_t properties);
 
+void download_file(const char * filename, const char * loc);
+
+void upload_file(const char* filesystem_path, const char* nc_path);
+
 char * get_content_type(const char * filename);
 
 char * get_date_changed(const char * filename);
 
 size_t get_file_size(const char * filename);
-
-void download_file(const char * filename, const char * loc);
 
 char *get_etag(const char *filename);
 

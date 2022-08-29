@@ -8,5 +8,11 @@
 #define NEXTCLOUD_PASSWORD "PASSWORD"
 
 int main(int argc, char *argv[]){
+    api_grabber_prop_t properties;
+    properties.nextcloud_url = NEXTCLOUD_BASE_URL;
+    properties.username = NEXTCLOUD_USER;
+    properties.password = NEXTCLOUD_PASSWORD;
+    init_api_grabber(properties);
+    upload_file(UPLOAD_FILEPATH, SERVER_FILEPATH);
     return 0;
 }

@@ -30,6 +30,14 @@ void download_file(const char *filename, const char *loc) {
     }
 }
 
+void upload_file(const char* filesystem_path, const char* nc_path) {
+    int status = upload_req(filesystem_path, nc_path);
+
+    if (status != WEB_REQ_OK) {
+        ERROR_HANDLER(get_error_msg(status));
+    }
+}
+
 size_t get_file_size(const char *filename) {
     size_t result = 0;
 
